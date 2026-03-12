@@ -4,107 +4,188 @@ import { useEffect, useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { AppScreenshot } from '@/components/ui/AppScreenshot';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
+const MICRO_STATS = [
+  { value: '99.9%', label: 'Disponibilité' },
+  { value: '< 3s', label: 'Réponse IA' },
+  { value: 'France', label: 'Hébergement' },
+  { value: 'RGPD', label: 'Conformité' },
+];
 
 export function Hero() {
-  const titleRef = useRef<HTMLHeadingElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const line1Ref = useRef<HTMLDivElement>(null);
+  const line2Ref = useRef<HTMLDivElement>(null);
+  const line3Ref = useRef<HTMLDivElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
+  const rightRef = useRef<HTMLDivElement>(null);
+  const counterRef = useRef<HTMLSpanElement>(null);
   const screenshotRef = useRef<HTMLDivElement>(null);
-  const socialRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
 
-    tl.fromTo(titleRef.current, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1 })
-      .fromTo(subtitleRef.current, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.8 }, '-=0.6')
-      .fromTo(ctaRef.current, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
-      .fromTo(
-        screenshotRef.current,
-        { opacity: 0, y: 48 },
-        { opacity: 1, y: 0, duration: 1, ease: 'quart.out' },
-        '-=0.3'
-      )
-      .fromTo(socialRef.current, { opacity: 0 }, { opacity: 1, duration: 0.5 }, '-=0.2');
+    tl.fromTo(
+      [line1Ref.current, line2Ref.current, line3Ref.current],
+      { opacity: 0, y: 64, skewY: 1.5 },
+      { opacity: 1, y: 0, skewY: 0, duration: 1.1, stagger: 0.11 }
+    )
+      .fromTo(subtitleRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7 }, '-=0.55')
+      .fromTo(ctaRef.current, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6 }, '-=0.45')
+      .fromTo(rightRef.current, { opacity: 0, x: 36 }, { opacity: 1, x: 0, duration: 1, ease: 'power3.out' }, '-=1.05')
+      .fromTo(screenshotRef.current, { opacity: 0, y: 48 }, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' }, '-=0.6');
+
+    const obj = { value: 0 };
+    gsap.to(obj, {
+      value: 150,
+      duration: 2.2,
+      delay: 0.9,
+      ease: 'power2.out',
+      onUpdate: () => {
+        if (counterRef.current) counterRef.current.textContent = Math.round(obj.value).toString();
+      },
+    });
+
+    if (screenshotRef.current) {
+      gsap.to(screenshotRef.current, {
+        yPercent: -6,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+    }
+
+    return () => ScrollTrigger.getAll().forEach((t) => t.kill());
   }, []);
 
   return (
-    <section className="relative bg-hero-gradient overflow-hidden">
-      <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 lg:px-12 pt-32 lg:pt-44 pb-24">
-        {/* Badge — simple, no glassmorphism */}
-        <div className="mb-10">
-          <span className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-md text-xs font-medium text-primary-100 tracking-wide uppercase">
-            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
-            Nouveau — IA Copilote
-          </span>
+    <section ref={containerRef} className="relative overflow-hidden bg-[#07090E]">
+      {/* Decorative grid lines */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        <div className="absolute inset-0 opacity-[0.025]">
+          {[25, 50, 75].map((p) => (
+            <div key={p} className="absolute top-0 bottom-0 border-l border-white" style={{ left: `${p}%` }} />
+          ))}
         </div>
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-primary" />
+        {/* Bottom glow */}
+        <div
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[900px] h-[360px] opacity-[0.18]"
+          style={{ background: 'radial-gradient(ellipse at center top, #2563EB 0%, transparent 70%)' }}
+        />
+      </div>
 
-        {/* Title — left-aligned, no gradient text */}
-        <h1
-          ref={titleRef}
-          className="text-4xl sm:text-5xl lg:text-6xl xl:text-[4.25rem] font-display font-bold text-white leading-[1.08] max-w-4xl"
-        >
-          La gestion de copropriété enfin{' '}
-          <span className="text-primary-200">simple, intelligente</span>{' '}
-          et sereine.
-        </h1>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 pt-36 lg:pt-48 pb-0">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12 lg:gap-16 items-start">
 
-        {/* Subtitle — left-aligned */}
-        <p
-          ref={subtitleRef}
-          className="text-lg sm:text-xl text-slate-400 max-w-2xl mt-6 leading-relaxed"
-        >
-          Nestor centralise vos interventions, factures, assemblées et documents
-          dans une interface unique. Avec l&apos;IA en copilote, vous anticipez
-          au lieu de subir.
-        </p>
+          {/* ── Left: Headline ── */}
+          <div>
+            <div className="flex items-center gap-3 mb-10">
+              <div className="w-5 h-[2px] bg-primary shrink-0" />
+              <span className="text-[11px] font-semibold text-primary tracking-[0.22em] uppercase">
+                Logiciel de gestion copropriété
+              </span>
+            </div>
 
-        {/* CTAs — no gradient, solid buttons */}
-        <div ref={ctaRef} className="flex flex-col sm:flex-row items-start gap-4 mt-10">
-          <a
-            href="https://app.nestor-immo.com/register"
-            className="group px-7 py-3.5 bg-primary text-white font-semibold rounded-lg text-base hover:bg-primary-hover transition-colors duration-200 flex items-center gap-2"
-          >
-            Essayer gratuitement
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
-          </a>
-          <a
-            href="https://app.nestor-immo.com"
-            className="px-7 py-3.5 border border-slate-600 text-slate-300 font-medium rounded-lg text-base hover:border-slate-400 hover:text-white transition-colors duration-200"
-          >
-            Voir la démo
-          </a>
-        </div>
+            <div className="mb-3 overflow-hidden">
+              <div
+                ref={line1Ref}
+                className="font-display font-bold text-white leading-[1.02] tracking-[-0.035em]"
+                style={{ fontSize: 'clamp(2.75rem, 6.5vw, 5.25rem)' }}
+              >
+                La gestion
+              </div>
+            </div>
+            <div className="mb-3 overflow-hidden">
+              <div
+                ref={line2Ref}
+                className="font-display font-bold text-primary leading-[1.02] tracking-[-0.035em]"
+                style={{ fontSize: 'clamp(2.75rem, 6.5vw, 5.25rem)' }}
+              >
+                de copropriété
+              </div>
+            </div>
+            <div className="mb-10 overflow-hidden">
+              <div
+                ref={line3Ref}
+                className="font-display font-bold text-white leading-[1.02] tracking-[-0.035em]"
+                style={{ fontSize: 'clamp(2.75rem, 6.5vw, 5.25rem)' }}
+              >
+                enfin en avance.
+              </div>
+            </div>
 
-        {/* Screenshot — no glow wrapper */}
-        <div ref={screenshotRef} className="mt-16 lg:mt-20 max-w-5xl">
-          <AppScreenshot module="Dashboard" variant="dashboard" floating={false} />
-        </div>
+            <p
+              ref={subtitleRef}
+              className="text-[1.0625rem] text-[#6B7C93] max-w-md leading-relaxed mb-10"
+            >
+              Nestor centralise interventions, factures, assemblées et documents.
+              L&apos;IA anticipe les problèmes avant qu&apos;ils arrivent.
+            </p>
 
-        {/* Social proof */}
-        <div ref={socialRef} className="mt-10 flex flex-col sm:flex-row items-start gap-6 text-sm text-slate-500">
-          <div className="flex items-center gap-2.5">
-            <div className="flex -space-x-1.5">
-              {['#2563EB', '#475569', '#16A34A', '#D97706'].map((c, i) => (
-                <div
-                  key={i}
-                  className="w-6 h-6 rounded-full border-2 border-[#111B2E] flex items-center justify-center text-[8px] font-semibold text-white"
-                  style={{ backgroundColor: c }}
-                >
-                  {['SM', 'JP', 'ML', 'AD'][i]}
+            <div ref={ctaRef} className="flex flex-col sm:flex-row items-start gap-3">
+              <a
+                href="https://app.nestor-immo.com/register"
+                className="group flex items-center gap-2.5 px-7 py-4 bg-primary text-white font-semibold text-sm rounded-lg hover:bg-primary-hover transition-colors duration-200"
+              >
+                Démarrer gratuitement
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+              </a>
+              <a
+                href="#demo-form"
+                className="flex items-center gap-2 px-7 py-4 text-[#6B7C93] text-sm font-medium hover:text-white transition-colors duration-200 border border-[#1C2637] rounded-lg hover:border-[#2A3A55]"
+              >
+                Voir la démo
+              </a>
+            </div>
+          </div>
+
+          {/* ── Right: Stats panel ── */}
+          <div ref={rightRef} className="pt-4 lg:pt-[5.5rem]">
+            <div className="mb-3 p-6 border border-[#1A2638] rounded-xl bg-[#0B1120]">
+              <div className="text-[3.75rem] font-display font-bold text-white leading-none mb-1 tracking-[-0.04em]">
+                <span ref={counterRef}>0</span>
+                <span className="text-primary">+</span>
+              </div>
+              <div className="text-sm text-[#6B7C93]">copropriétés nous font confiance</div>
+              <div className="mt-5 pt-5 border-t border-[#1A2638] flex items-center gap-1.5">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} className="w-3.5 h-3.5 text-amber-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+                <span className="ml-1.5 text-xs text-[#6B7C93]">4.9/5 avis vérifiés</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {MICRO_STATS.map((stat) => (
+                <div key={stat.label} className="p-4 border border-[#1A2638] rounded-xl bg-[#0B1120]">
+                  <div className="font-display font-bold text-white text-xl mb-0.5 tracking-[-0.02em]">
+                    {stat.value}
+                  </div>
+                  <div className="text-[10px] text-[#6B7C93] uppercase tracking-wider">{stat.label}</div>
                 </div>
               ))}
             </div>
-            <span>Adopté par <strong className="text-slate-300">150+</strong> copropriétés</span>
           </div>
-          <div className="hidden sm:block w-px h-4 bg-slate-700" />
-          <div className="flex items-center gap-1">
-            {[...Array(5)].map((_, i) => (
-              <svg key={i} className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-            ))}
-            <span className="ml-1">4.9/5 — avis vérifiés</span>
-          </div>
+        </div>
+
+        {/* Screenshot — full width below, fades into bg */}
+        <div ref={screenshotRef} className="mt-16 lg:mt-20 relative">
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 right-0 h-40 z-10"
+            style={{ background: 'linear-gradient(to bottom, transparent, #07090E)' }}
+          />
+          <AppScreenshot module="Dashboard" variant="dashboard" floating={false} />
         </div>
       </div>
     </section>

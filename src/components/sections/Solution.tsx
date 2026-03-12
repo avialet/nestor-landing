@@ -1,160 +1,212 @@
 'use client';
 
-import { LayoutDashboard, Wrench, Receipt, Vote, FolderOpen, Sparkles, ArrowRight } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { AppScreenshot } from '@/components/ui/AppScreenshot';
-import { useGSAPReveal } from '@/components/ui/GSAPProvider';
-import { useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-const mainFeatures = [
+gsap.registerPlugin(ScrollTrigger);
+
+type Variant = 'dashboard' | 'interventions' | 'comptabilite' | 'ag' | 'documents' | 'copilot';
+
+const features: {
+  num: string;
+  tag: string;
+  title: string;
+  description: string;
+  bullets: string[];
+  variant: Variant;
+  accent: string;
+  flip?: boolean;
+}[] = [
   {
-    icon: LayoutDashboard,
-    title: 'Dashboard intelligent',
-    description: 'Vue d\'ensemble en temps réel : interventions en cours, factures à valider, impayés, tendances. Tout est là, en un coup d\'œil.',
-    variant: 'dashboard' as const,
-    accentLight: 'bg-blue-50',
-    accentText: 'text-blue-600',
+    num: '01',
+    tag: 'Vue d\'ensemble',
+    title: 'Tout votre immeuble en un seul regard.',
+    description: 'Le dashboard centralise interventions en cours, factures à valider, impayés et tendances. Plus besoin de naviguer entre dix outils.',
+    bullets: ['Alertes en temps réel', 'Indicateurs clés personnalisables', 'Historique complet'],
+    variant: 'dashboard',
+    accent: '#2563EB',
   },
   {
-    icon: Wrench,
-    title: 'Interventions de A à Z',
-    description: 'Créez, planifiez, suivez chaque intervention. Du signalement à la clôture, avec suivi prestataire et facturation intégrée.',
-    variant: 'interventions' as const,
-    accentLight: 'bg-emerald-50',
-    accentText: 'text-emerald-600',
+    num: '02',
+    tag: 'Interventions',
+    title: 'Du signalement à la clôture, sans rien perdre.',
+    description: 'Créez une intervention, assignez un prestataire, suivez l\'avancement, déclenchez la facturation. Tout dans un seul fil.',
+    bullets: ['Suivi prestataire intégré', 'Notification automatique', 'Facturation en un clic'],
+    variant: 'interventions',
+    accent: '#16A34A',
+    flip: true,
+  },
+  {
+    num: '03',
+    tag: 'Comptabilité',
+    title: 'Vos comptes, enfin lisibles.',
+    description: 'Plan comptable copropriété, appels de charges, journal d\'écritures, rapprochements bancaires. Conforme, précis, auditable.',
+    bullets: ['Plan comptable normé', 'Appels de charges automatisés', 'Export comptable'],
+    variant: 'comptabilite',
+    accent: '#D97706',
+  },
+  {
+    num: '04',
+    tag: 'Assemblées',
+    title: 'Des AG préparées, tenues et clôturées en 48h.',
+    description: 'Convocations, résolutions, votes en temps réel, calcul automatique des majorités, PV généré instantanément.',
+    bullets: ['Votes en ligne ou présentiel', 'Majorités calculées automatiquement', 'PV en un clic'],
+    variant: 'ag',
+    accent: '#7C3AED',
+    flip: true,
   },
 ];
 
-const secondaryFeatures = [
-  {
-    icon: Receipt,
-    title: 'Factures & Comptabilité',
-    description: 'Plan comptable, appels de charges, journal d\'écritures.',
-    variant: 'comptabilite' as const,
-  },
-  {
-    icon: Vote,
-    title: 'Assemblées Générales',
-    description: 'Résolutions, votes en temps réel, PV automatique.',
-    variant: 'ag' as const,
-  },
-  {
-    icon: FolderOpen,
-    title: 'Gestion documentaire',
-    description: 'Documents classés, recherche instantanée, accès sécurisé.',
-    variant: 'documents' as const,
-  },
-  {
-    icon: Sparkles,
-    title: 'IA Copilote',
-    description: 'Questions en langage naturel, réponses contextualisées.',
-    variant: 'copilot' as const,
-    badge: 'IA',
-  },
-];
+function FeatureRow({
+  feature,
+  index,
+}: {
+  feature: typeof features[0];
+  index: number;
+}) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
 
-export function Solution() {
-  const sectionRef = useGSAPReveal({ stagger: 0.1 });
-  const [activeVariant, setActiveVariant] = useState<'dashboard' | 'interventions' | 'comptabilite' | 'ag' | 'documents' | 'copilot' | 'prestataires'>('dashboard');
+  useEffect(() => {
+    if (!rowRef.current) return;
+    const fromX = feature.flip ? 40 : -40;
+    gsap.fromTo(
+      textRef.current,
+      { opacity: 0, x: fromX * -1 },
+      {
+        opacity: 1, x: 0, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: rowRef.current, start: 'top 80%', toggleActions: 'play none none none' },
+      }
+    );
+    gsap.fromTo(
+      imageRef.current,
+      { opacity: 0, x: fromX },
+      {
+        opacity: 1, x: 0, duration: 0.9, ease: 'power3.out', delay: 0.1,
+        scrollTrigger: { trigger: rowRef.current, start: 'top 80%', toggleActions: 'play none none none' },
+      }
+    );
+    return () => ScrollTrigger.getAll().forEach((t) => t.kill());
+  }, [feature.flip]);
+
+  const textCol = (
+    <div ref={textRef} className="flex flex-col justify-center py-8 lg:py-0">
+      <div className="flex items-center gap-3 mb-6">
+        <span
+          className="text-[11px] font-bold tracking-[0.2em] uppercase"
+          style={{ color: feature.accent }}
+        >
+          {feature.tag}
+        </span>
+        <span className="text-[#CBD5E1] text-xs">—</span>
+        <span className="text-[11px] font-semibold text-[#94A3B8] tracking-wider">{feature.num}</span>
+      </div>
+      <h3
+        className="font-display font-bold text-[#0F172A] leading-[1.1] tracking-[-0.025em] mb-5"
+        style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)' }}
+      >
+        {feature.title}
+      </h3>
+      <p className="text-[#64748B] text-base leading-relaxed mb-7 max-w-sm">
+        {feature.description}
+      </p>
+      <ul className="space-y-2.5">
+        {feature.bullets.map((b) => (
+          <li key={b} className="flex items-center gap-3 text-sm text-[#334155]">
+            <span
+              className="w-1.5 h-1.5 rounded-full shrink-0"
+              style={{ backgroundColor: feature.accent }}
+            />
+            {b}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  const imageCol = (
+    <div ref={imageRef} className="relative">
+      <AppScreenshot module={feature.variant} variant={feature.variant} />
+    </div>
+  );
 
   return (
-    <section ref={sectionRef} className="py-24 lg:py-32 bg-bg-app">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 lg:px-12">
-        {/* Header — left-aligned */}
-        <div className="max-w-2xl mb-16">
-          <span className="gsap-reveal inline-block text-xs font-semibold text-primary uppercase tracking-wider mb-4">
-            La solution
-          </span>
-          <h2 className="gsap-reveal text-3xl sm:text-4xl lg:text-[2.75rem] font-display font-bold text-text-primary leading-tight">
-            Un seul outil pour tout gérer.{' '}
-            <span className="text-primary">Avec l&apos;IA en plus.</span>
-          </h2>
-          <p className="gsap-reveal text-lg text-text-secondary mt-4 leading-relaxed">
-            Six modules pensés pour couvrir 100% de vos besoins de gestion de copropriété.
-          </p>
-        </div>
+    <div
+      ref={rowRef}
+      className={`grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center py-16 lg:py-20 ${
+        index < features.length - 1 ? 'border-b border-[#E2E8F0]' : ''
+      }`}
+    >
+      {feature.flip ? (
+        <>
+          <div className="order-2 lg:order-1">{imageCol}</div>
+          <div className="order-1 lg:order-2">{textCol}</div>
+        </>
+      ) : (
+        <>
+          {textCol}
+          {imageCol}
+        </>
+      )}
+    </div>
+  );
+}
 
-        {/* Two main features — asymmetric cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
-          {mainFeatures.map((feature) => (
-            <div
-              key={feature.title}
-              className="gsap-reveal group cursor-pointer"
-              onMouseEnter={() => setActiveVariant(feature.variant)}
+export function Solution() {
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!headerRef.current) return;
+    gsap.fromTo(headerRef.current, { opacity: 0, y: 36 }, {
+      opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+      scrollTrigger: { trigger: headerRef.current, start: 'top 88%', toggleActions: 'play none none none' },
+    });
+    return () => ScrollTrigger.getAll().forEach((t) => t.kill());
+  }, []);
+
+  return (
+    <section className="bg-white py-16 lg:py-20">
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
+
+        {/* Header */}
+        <div ref={headerRef} className="mb-4 lg:mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-5 h-[2px] bg-primary shrink-0" />
+            <span className="text-[11px] font-semibold text-primary tracking-[0.22em] uppercase">
+              La solution
+            </span>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-end">
+            <h2
+              className="font-display font-bold text-[#0F172A] leading-[1.05] tracking-[-0.03em]"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.25rem)' }}
             >
-              <div className={`relative p-7 lg:p-8 rounded-xl border transition-all duration-200 ${
-                activeVariant === feature.variant
-                  ? 'border-primary/20 bg-white shadow-md'
-                  : 'border-slate-200/80 bg-white hover:border-slate-300'
-              }`}>
-                <div className="flex items-start gap-4">
-                  <div className={`w-11 h-11 rounded-lg ${feature.accentLight} flex items-center justify-center shrink-0`}>
-                    <feature.icon className={`w-5 h-5 ${feature.accentText}`} />
-                  </div>
-                  <div>
-                    <h3 className="font-display font-semibold text-lg text-text-primary">
-                      {feature.title}
-                    </h3>
-                    <p className="text-sm text-text-secondary leading-relaxed mt-1.5">
-                      {feature.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+              Un seul outil.<br />Pour tout gérer.
+            </h2>
+            <p className="text-[#64748B] text-base leading-relaxed max-w-sm">
+              Six modules pensés pour couvrir 100% de vos besoins. Sans intégration, sans double saisie, sans friction.
+            </p>
+          </div>
         </div>
 
-        {/* Four secondary features — compact row */}
-        <div className="gsap-reveal grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-12">
-          {secondaryFeatures.map((feature) => (
-            <button
-              key={feature.title}
-              onClick={() => setActiveVariant(feature.variant)}
-              className={`text-left p-4 rounded-xl border transition-all duration-200 ${
-                activeVariant === feature.variant
-                  ? 'border-primary/20 bg-white shadow-sm'
-                  : 'border-slate-200/60 bg-white/60 hover:bg-white hover:border-slate-200'
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-1.5">
-                <feature.icon className={`w-4 h-4 shrink-0 ${
-                  activeVariant === feature.variant ? 'text-primary' : 'text-text-secondary'
-                }`} />
-                <h3 className={`font-display font-semibold text-sm ${
-                  activeVariant === feature.variant ? 'text-text-primary' : 'text-text-secondary'
-                }`}>
-                  {feature.title}
-                </h3>
-                {feature.badge && (
-                  <span className="px-1.5 py-0.5 bg-primary text-white text-[9px] font-bold rounded">
-                    {feature.badge}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-text-secondary/80 leading-relaxed pl-7">
-                {feature.description}
-              </p>
-            </button>
-          ))}
-        </div>
+        {/* Alternating feature rows */}
+        {features.map((feature, i) => (
+          <FeatureRow key={feature.num} feature={feature} index={i} />
+        ))}
 
-        {/* Screenshot preview */}
-        <div className="gsap-reveal max-w-5xl">
-          <AppScreenshot
-            module={activeVariant}
-            variant={activeVariant}
-            className="transition-all duration-500"
-          />
-        </div>
-
-        {/* CTA link */}
-        <div className="gsap-reveal mt-10">
+        {/* Bottom CTA */}
+        <div className="pt-10 flex items-center justify-between border-t border-[#E2E8F0]">
+          <p className="text-sm text-[#94A3B8]">+ Documents, Prestataires, Sinistres…</p>
           <a
             href="/fonctionnalites"
             className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-hover transition-colors group"
           >
-            Découvrir toutes les fonctionnalités
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            Toutes les fonctionnalités
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </a>
         </div>
       </div>
