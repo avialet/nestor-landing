@@ -31,7 +31,7 @@ export function NestorLogoFull({
   white?: boolean;
   size?: 'sm' | 'default' | 'lg';
 }) {
-  const heights = { sm: 28, default: 36, lg: 48 };
+  const heights = { sm: 44, default: 56, lg: 72 };
   const h = heights[size];
   // Logo is landscape ~2:1, so width = h * 2
   const w = Math.round(h * 2.06);
