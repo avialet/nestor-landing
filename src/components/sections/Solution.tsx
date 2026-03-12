@@ -54,7 +54,7 @@ const secondaryFeatures = [
 
 export function Solution() {
   const sectionRef = useGSAPReveal({ stagger: 0.1 });
-  const [activeVariant, setActiveVariant] = useState<string>('dashboard');
+  const [activeVariant, setActiveVariant] = useState<'dashboard' | 'interventions' | 'comptabilite' | 'ag' | 'documents' | 'copilot' | 'prestataires'>('dashboard');
 
   return (
     <section ref={sectionRef} className="py-24 lg:py-32 bg-bg-app">
